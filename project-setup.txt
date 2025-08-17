@@ -1,0 +1,225 @@
+E-WASTE MANAGEMENT SYSTEM - SETUP GUIDE
+======================================
+
+1. REQUIRED DEPENDENCIES
+=======================
+
+Frontend Dependencies:
+```bash
+npm install tailwindcss@latest
+npm install @tailwindcss/forms
+npm install qrcode.js
+npm install firebase
+npm install chart.js
+npm install @heroicons/vue  # For icons
+```
+
+Backend Dependencies:
+```bash
+pip install flask
+pip install flask-cors
+pip install opencv-python
+pip install numpy
+pip install firebase-admin
+pip install python-dotenv
+pip install gunicorn  # For production deployment
+```
+
+2. INITIAL SETUP COMMANDS
+========================
+
+A. TailwindCSS Setup:
+```bash
+# Initialize Tailwind CSS
+npx tailwindcss init
+
+# Create tailwind.config.js
+cat > tailwind.config.js << EOL
+module.exports = {
+  content: ["./**/*.{html,js}"],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#2d5a27',
+        secondary: '#4CAF50',
+      },
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
+}
+EOL
+
+# Create input.css
+cat > input.css << EOL
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+EOL
+```
+
+B. Flask Backend Setup:
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# Unix/MacOS:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+3. PROJECT STRUCTURE
+===================
+```
+e-waste-management/
+├── frontend/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── styles/
+│   │   └── utils/
+│   ├── index.html
+│   ├── input.css
+│   └── tailwind.config.js
+├── backend/
+│   ├── api/
+│   │   ├── routes/
+│   │   ├── models/
+│   │   └── utils/
+│   ├── config/
+│   ├── app.py
+│   └── requirements.txt
+├── ai_models/
+│   ├── yolov3.weights
+│   ├── yolov3.cfg
+│   └── coco.names
+└── README.md
+```
+
+4. DEVELOPMENT COMMANDS
+======================
+
+A. Frontend Development:
+```bash
+# Watch CSS changes
+npx tailwindcss -i ./src/input.css -o ./src/styles/output.css --watch
+
+# Start development server (if using live-server)
+live-server
+```
+
+B. Backend Development:
+```bash
+# Start Flask development server
+flask run --debug
+
+# Or using Python directly
+python app.py
+```
+
+5. REQUIRED ENVIRONMENT VARIABLES
+===============================
+
+Create a .env file in the root directory:
+```env
+# Flask Configuration
+FLASK_APP=app.py
+FLASK_ENV=development
+FLASK_SECRET_KEY=your_secret_key
+PORT=5000
+
+# Firebase Configuration
+FIREBASE_API_KEY=your_api_key
+FIREBASE_AUTH_DOMAIN=your_auth_domain
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_STORAGE_BUCKET=your_storage_bucket
+FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+FIREBASE_APP_ID=your_app_id
+
+# Maps API Configuration
+MAPS_API_KEY=your_maps_api_key
+
+# Email Service Configuration
+EMAIL_SERVICE_API_KEY=your_email_service_api_key
+EMAIL_FROM_ADDRESS=your_email_address
+
+# Optional SMS Gateway Configuration
+SMS_API_KEY=your_sms_api_key
+SMS_FROM_NUMBER=your_sms_number
+```
+
+6. FIREBASE RULES
+================
+
+Firestore Rules:
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Devices
+    match /devices/{deviceId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'technician' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+    
+    // Redemptions
+    match /redemptions/{redemptionId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+  }
+}
+```
+
+Storage Rules:
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null 
+        && request.resource.size < 5 * 1024 * 1024 // 5MB
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+```
+
+7. DEPLOYMENT CHECKLIST
+======================
+
+Before deployment:
+- [ ] Update environment variables
+- [ ] Configure Firebase production project
+- [ ] Set up SSL certificates
+- [ ] Configure domain settings
+- [ ] Set up monitoring tools
+- [ ] Configure backup systems
+- [ ] Test all features in production environment
+- [ ] Set up CI/CD pipelines
+- [ ] Configure error tracking
+- [ ] Set up analytics
+
+This setup guide complements the main project prompt and provides all necessary commands and configurations for development.
