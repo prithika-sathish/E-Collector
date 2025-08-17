@@ -1,6 +1,11 @@
-# Hack-With-Gujarat
 
-# E-Collector
+## E-Collector
+![E-Collector Demo](https://media.giphy.com/media/1KJKtkG4AMYAQxdpKU/giphy.gif)
+
+**Description:**  
+An automated email collection and management tool that scrapes and organizes data, with frontend dashboards and backend automation workflows. Built with JavaScript and integrated APIs for seamless operations.
+
+
 
 Step 1 : Download the zip file of the project and extract <br>
 Step 2 : Download yolo weights and place in same directory (LINK : https://tinyurl.com/yolo-weights ) <br>
